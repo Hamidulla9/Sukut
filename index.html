@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Uzr xati</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400;1,500&display=swap">
+<style>
+:root{--bg:#fff;--fg:#0a0a0a;--mute:#8a8a8a;--line:#d6d6d6;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--fg:#f5f5f5;--mute:#7c7c7c;--line:#2e2e2e}}
+:root[data-theme="dark"]{--bg:#000;--fg:#f5f5f5;--mute:#7c7c7c;--line:#2e2e2e}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--fg);-webkit-tap-highlight-color:transparent}
+body{font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif;font-weight:400;cursor:pointer;user-select:none}
+#bar{position:fixed;top:0;left:0;height:1px;background:var(--fg);width:0;transition:width .8s ease;z-index:3}
+#stage{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:calc(2.5rem + env(safe-area-inset-top,0px)) 1.75rem calc(4rem + env(safe-area-inset-bottom,0px));transition:opacity .6s ease}
+#stage.out{opacity:0}
+.tx{max-width:27rem;font-style:italic;font-weight:500;font-size:clamp(1.65rem,6.4vw,2.3rem);line-height:1.3;letter-spacing:.005em}
+.tx.big{font-size:clamp(3.4rem,18vw,6rem);font-weight:400;line-height:1}
+.w{display:inline-block;opacity:0;filter:blur(5px);transition:opacity 1s ease,filter 1s ease}
+.w.on{opacity:1;filter:none}
+.pair{margin:0 0 1.9rem;max-width:26rem}
+.lie{display:inline;font-style:italic;font-size:clamp(1.45rem,5.6vw,1.9rem);line-height:1.25;color:var(--mute);background:linear-gradient(var(--fg),var(--fg)) no-repeat 0 55%/0 1.5px;opacity:0;transition:opacity .8s ease,background-size .9s ease}
+.lie.on{opacity:1}
+.lie.x{background-size:100% 1.5px}
+.truth{display:block;margin-top:.35rem;font-style:italic;font-weight:500;font-size:clamp(1.65rem,6.4vw,2.2rem);line-height:1.25;opacity:0;transition:opacity 1s ease}
+.truth.on{opacity:1}
+.num{font-size:clamp(6rem,34vw,11rem);line-height:.95;font-weight:400}
+.cap{margin-top:1rem;color:var(--mute);font-style:italic;font-size:1.35rem;max-width:20rem;line-height:1.3}
+.row{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;margin-top:2.2rem}
+button{font:inherit;font-style:italic;font-size:1.4rem;color:var(--fg);background:none;border:1px solid var(--line);padding:.55rem 1.6rem;border-radius:999px;cursor:pointer;transition:border-color .25s}
+button:hover{border-color:var(--fg)}
+button:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+#reply{margin-top:1.6rem;min-height:2em;color:var(--mute);font-style:italic;font-size:1.4rem}
+#hint{position:fixed;left:0;right:0;bottom:calc(1.3rem + env(safe-area-inset-bottom,0px));text-align:center;color:var(--mute);font-style:italic;font-size:1.05rem;opacity:0;transition:opacity 1s ease;pointer-events:none}
+#hint.on{opacity:1}
+#fx{position:fixed;inset:0;z-index:20;background:var(--bg);opacity:0;transition:opacity .5s ease;cursor:default}
+#fx.on{opacity:1}
+#fx canvas{position:absolute;inset:0;width:100%;height:100%}
+#fxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem 1.75rem;pointer-events:none;z-index:2;text-shadow:0 0 22px var(--bg),0 0 8px var(--bg)}
+#fxt .l1{font-style:italic;font-weight:500;font-size:clamp(2.2rem,9vw,3.6rem);line-height:1.15;max-width:26rem}
+#fxt .l2{margin-top:.9rem;font-style:italic;font-weight:400;font-size:clamp(1.6rem,6.4vw,2.3rem);line-height:1.2}
+#fxt .l3{margin-top:1.8rem;color:var(--mute);font-style:italic;font-size:1.3rem;line-height:1.3;max-width:22rem}
+@media (prefers-reduced-motion:reduce){.w,.lie,.truth,#stage{transition:none}.w{filter:none}}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div id="stage" aria-live="polite"></div>
+<div id="hint">davom etish uchun ekranga bosing</div>
+
+<script>
+var P=[
+{t:"Uzr.",big:1},
+{s:[["«Hop oliberaman.»","Pulim yo’g’idi."],["«Ertaga 100 foiz.»","Ertagayam pulim bo’masligini bilardim."],["«Ishlarim ko’payib ketti.»","Etishga uyaldim."]]},
+{t:"Hayotim,"},
+{t:"Bu gaplani yozishga to’g’risi uyalvoma. Har bir so’zni yozarkanman, qigan ishimdan sanga qaytib qarashga vijdonim yo’l qo’ymasa kere."},
+{t:"San mandan oddiy uxod nabor so’radin. Pulim yo’g’idi. Shuni etsamam bo’lardi, lekin etomadim. “Mayli” didim."},
+{t:"Keyin deyarli yarim oy sani aldadim. Har kuni yengi bahona topdim, san manga ishonib kutin."},
+{t:"San mani sevganin uchun ishondin. Man o’sha ishonchini sindirdim."},
+{t:"San manga “mani yosh bola qildin” diding. To’g’ri etin. San manga kotta odamlade ishondin, man sanga yosh bolaga o’xshab yolg’on gapirurdim xaqiqatan qochib."},
+{t:"Pulim yo’ligi uyatmasidi. Uyalshim kere bo’gan narsa, yoshbolaga o’xshab yolg’on gapirib yurishimidi. Haqiqati etsam, san chunardin. Man noto’g’ri o’yladim."},
+{t:"Manga rostan juda abidna qigan ishim. Har bir yolg’on uchun. Ishonchini sindirganim uchun. Sanga qigan ishimi o’ylasam hardoim uyalvotudim, oldinga qanaqb borsamikan db harsafar ming uyata yoninga kelardm."},
+{t:"Man hozr bahona qidirmiman. Hammasi mani aybim."},
+{t:"Sandan bir narsa so’riman: bir marta mani eshit. Bitada gaplashib ket dimiman. Mayli kutaman."},
+{t:"Va’da beraman: qiyin bo’sayam, man uchun to’g’ri kemasayam, endi sanga faqat rostini etaman. Buni so’z bilanmas, harakatlarim bilan ko’rsataman."},
+{t:"Sani juda qattig’ sevaman ii uzr so’riman qigan ishimdan juda pryam juda uyattaman kechirolsen kechir Hayotm chin yuredan."},
+{c:1},
+{e:1}
+];
+var st=document.getElementById('stage'),bar=document.getElementById('bar'),hint=document.getElementById('hint');
+var i=-1,busy=false,timers=[],last=P.length-1;
+var RB=null,YB=null,moved=false,px=-999,py=-999;
+
+function clr(){timers.forEach(clearTimeout);timers=[]}
+function later(f,ms){timers.push(setTimeout(f,ms))}
+function done(){busy=false;hint.classList.add('on')}
+
+function show(k){
+clr();hint.classList.remove('on');busy=true;RB=null;
+st.classList.add('out');
+setTimeout(function(){
+i=k;st.innerHTML='';
+bar.style.width=(i/last*100)+'%';
+var p=P[i];
+if(p.t){
+var d=document.createElement('div');d.className='tx'+(p.big?' big':'');
+p.t.split(' ').forEach(function(w,n){var s=document.createElement('span');s.className='w';s.textContent=w;d.appendChild(s);d.appendChild(document.createTextNode(' '))});
+st.appendChild(d);st.classList.remove('out');
+var ws=d.querySelectorAll('.w');
+ws.forEach(function(w,n){later(function(){w.classList.add('on')},300+n*130)});
+later(done,300+ws.length*130+900);
+}else if(p.s){
+var t=300;
+p.s.forEach(function(pr){
+var b=document.createElement('div');b.className='pair';
+var a=document.createElement('span');a.className='lie';a.textContent=pr[0];
+var c=document.createElement('span');c.className='truth';c.textContent=pr[1];
+b.appendChild(a);b.appendChild(c);st.appendChild(b);
+later(function(){a.classList.add('on')},t);
+later(function(){a.classList.add('x')},t+1100);
+later(function(){c.classList.add('on')},t+2100);
+t+=3400});
+st.classList.remove('out');
+later(done,t);
+}else if(p.c){
+var n=document.createElement('div');n.className='num';
+var diff=Math.max(0,Math.floor((new Date()-new Date(2026,10,9))/86400000));
+n.textContent=diff;
+var cp=document.createElement('div');cp.className='cap';cp.textContent='kun yolg’onsiz. Bu raqam har kuni o’zi oshib boradi. Men uni to’xtatmayman.';
+st.appendChild(n);st.appendChild(cp);st.classList.remove('out');
+later(done,1200);
+}else{
+var q=document.createElement('div');q.className='tx';q.textContent='Yarashamizmi';
+var r=document.createElement('div');r.className='row';
+var yes=null,run=null;
+[["Haa lekin shunisi oxirgisi bo’sin","Hop Hayotim raxmat kottakon boshqa umuman qaytarilmidi."],["O’ylab ko’raman","Mayli chunaman."]].forEach(function(o,k){
+var bt=document.createElement('button');bt.textContent=o[0];
+if(k===0){yes=bt;bt.addEventListener('click',function(e){e.stopPropagation();celebrate(o[1])})}
+else{run=bt;bt.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();flee()})}
+r.appendChild(bt)});
+var rp=document.createElement('div');rp.id='reply';
+st.appendChild(q);st.appendChild(r);st.appendChild(rp);st.classList.remove('out');
+arm(run,yes);
+busy=false;
+}
+},i<0?0:600);
+}
+
+/* "O'ylab ko'raman" tugmasi butun ekran bo'ylab qochadi va bosib bo'lmaydi */
+function pos(e){
+if(e.touches&&e.touches[0]){px=e.touches[0].clientX;py=e.touches[0].clientY}
+else if(typeof e.clientX==='number'){px=e.clientX;py=e.clientY}}
+function arm(b,y){
+RB=b;YB=y;moved=false;
+['touchstart','pointerdown','mousedown','mouseenter','focus'].forEach(function(ev){
+b.addEventListener(ev,function(e){pos(e);if(e.cancelable)e.preventDefault();e.stopPropagation();flee()},{passive:false})})}
+function flee(){
+var b=RB;if(!b)return;
+var r=b.getBoundingClientRect();
+if(!moved){
+var sp=document.createElement('span');
+sp.style.cssText='display:inline-block;width:'+r.width+'px;height:'+r.height+'px';
+b.parentNode.insertBefore(sp,b);
+b.style.position='fixed';b.style.left=r.left+'px';b.style.top=r.top+'px';
+b.style.margin='0';b.style.zIndex='5';b.style.background='var(--bg)';
+b.style.transition='left .28s ease,top .28s ease,border-color .25s';
+moved=true;void b.offsetWidth}
+var w=r.width,h=r.height,m=12,vw=window.innerWidth,vh=window.innerHeight;
+var yr=YB.getBoundingClientRect(),best={x:m,y:m};
+for(var t=0;t<40;t++){
+var x=m+Math.random()*(vw-w-2*m),y=m+Math.random()*(vh-h-2*m);
+var okP=Math.hypot(x+w/2-px,y+h/2-py)>170;
+var okY=!(x<yr.right+20&&x+w>yr.left-20&&y<yr.bottom+20&&y+h>yr.top-20);
+best={x:x,y:y};
+if(okP&&okY)break}
+b.style.left=best.x+'px';b.style.top=best.y+'px'}
+document.addEventListener('pointermove',function(e){
+pos(e);
+if(!RB)return;
+var r=RB.getBoundingClientRect();
+if(Math.hypot(px-(r.left+r.width/2),py-(r.top+r.height/2))<130)flee()});
+
+/* Finale: koinotdan tez uchib o'tish, yorug'lik, salyutlar va yozuv */
+var fxOn=false;
+function celebrate(msg){
+if(fxOn)return;fxOn=true;RB=null;clr();hint.classList.remove('on');
+var cs=getComputedStyle(document.body),FG=cs.color,BG=cs.backgroundColor;
+var still=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+var SPACE='#03040c',HUES=[190,205,220,250,280,305,330,28,48];
+function pickH(){return HUES[Math.floor(Math.random()*HUES.length)]+(Math.random()*16-8)}
+var fx=document.createElement('div');fx.id='fx';
+var cv=document.createElement('canvas');fx.appendChild(cv);
+var tx=document.createElement('div');tx.id='fxt';
+function line(cls,text){var d=document.createElement('div');d.className=cls;
+text.split(' ').forEach(function(w){var s=document.createElement('span');s.className='w';s.textContent=w;d.appendChild(s);d.appendChild(document.createTextNode(' '))});
+tx.appendChild(d);return d}
+line('l1','Sani juda qattig’ sevaman');line('l2','raxmat hammasi uchun');
+var l3=document.createElement('div');l3.className='l3';l3.textContent=msg;l3.style.opacity=0;tx.appendChild(l3);
+fx.appendChild(tx);document.body.appendChild(fx);
+requestAnimationFrame(function(){fx.classList.add('on')});
+function reveal(){
+var ws=tx.querySelectorAll('.w');
+ws.forEach(function(w,n){setTimeout(function(){w.classList.add('on')},n*170)});
+setTimeout(function(){l3.style.transition='opacity 1.6s ease';l3.style.opacity=1},ws.length*170+800)}
+if(still){reveal();return}
+
+var ctx=cv.getContext('2d'),dpr=Math.min(window.devicePixelRatio||1,2),W,H,u;
+function rs(){W=window.innerWidth;H=window.innerHeight;u=Math.max(.7,Math.min(1.3,Math.min(W,H)/600));
+cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=SPACE;ctx.fillRect(0,0,W,H)}
+rs();window.addEventListener('resize',rs);
+
+var stars=[];
+for(var q=0;q<280;q++)stars.push({x:(Math.random()-.5)*2,y:(Math.random()-.5)*2,z:Math.random(),h:pickH()});
+var WARP=2900,T0=performance.now(),prev=T0,flash=0,flashed=false,parts=[],rockets=[],nextL=0,burstN=0;
+
+function addBurst(cx,cy){
+burstN++;
+if(burstN%4===0){
+for(var k=0;k<80;k++){var a=k/80*6.2832;
+var hx=16*Math.pow(Math.sin(a),3),hy=-(13*Math.cos(a)-5*Math.cos(2*a)-2*Math.cos(3*a)-Math.cos(4*a));
+parts.push({x:cx,y:cy,vx:hx*.27*u,vy:hy*.27*u,l:1,d:.0085+Math.random()*.003,r:2.3})}
+}else{
+var ring=burstN%2===0,n=ring?72:90;
+for(var k2=0;k2<n;k2++){var b=Math.random()*6.2832,sp=ring?4.3*u*(.9+Math.random()*.1):(Math.random()*4.6+1)*u;
+parts.push({x:cx,y:cy,vx:Math.cos(b)*sp,vy:Math.sin(b)*sp,l:1,d:.009+Math.random()*.008,r:1.4+Math.random()*1.4})}
+}}
+
+function frame(now){
+var f=Math.min(3,(now-prev)/16.67);prev=now;
+var t=now-T0;
+if(t<WARP){
+var p=t/WARP,speed=.0016+Math.pow(p,3)*.085;
+ctx.globalAlpha=.32;ctx.fillStyle=SPACE;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
+var cx=W/2,cy=H/2,sc=Math.max(W,H)*.5;
+var hh=215+p*110,gr=ctx.createRadialGradient(cx,cy,0,cx,cy,sc*1.1);
+gr.addColorStop(0,'hsla('+hh+',100%,65%,'+(.05+p*.28)+')');
+gr.addColorStop(.45,'hsla('+(hh+50)+',100%,45%,'+(p*.1)+')');
+gr.addColorStop(1,'hsla(260,100%,30%,0)');
+ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
+for(var i2=0;i2<stars.length;i2++){var s=stars[i2];
+var pz=s.z+speed*f*2.4;
+s.z-=speed*f;
+var x2=cx+s.x/s.z*sc*.5,y2=cy+s.y/s.z*sc*.5,x1=cx+s.x/pz*sc*.5,y1=cy+s.y/pz*sc*.5;
+if(s.z<=.012||x2<-50||x2>W+50||y2<-50||y2>H+50){s.x=(Math.random()-.5)*2;s.y=(Math.random()-.5)*2;s.z=1;s.h=pickH();continue}
+ctx.globalAlpha=Math.min(1,(1-s.z)*1.4);ctx.lineWidth=(1-s.z)*3.2+.5;ctx.strokeStyle='hsl('+s.h+',100%,'+(62+(1-s.z)*28)+'%)';
+ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+}else{
+if(!flashed){flashed=true;flash=.9;nextL=now;setTimeout(reveal,700)}
+if(flash>0){ctx.globalAlpha=flash;ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;flash-=.045*f}
+else{ctx.globalAlpha=.2;ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1}
+if(now>nextL&&flash<=.4){
+rockets.push({x:W*(.12+Math.random()*.76),y:H,ty:H*(.14+Math.random()*.34),vy:-(8+Math.random()*3)*u,dx:(Math.random()-.5)*.8});
+nextL=now+380+Math.random()*420}
+ctx.fillStyle=FG;
+for(var r2=rockets.length-1;r2>=0;r2--){var rk=rockets[r2];
+rk.y+=rk.vy*f;rk.x+=rk.dx*f;rk.vy*=Math.pow(.988,f);
+ctx.beginPath();ctx.arc(rk.x,rk.y,1.8,0,6.2832);ctx.fill();
+if(rk.y<=rk.ty||rk.vy>-1.6){addBurst(rk.x,rk.y);rockets.splice(r2,1)}}
+for(var k3=parts.length-1;k3>=0;k3--){var pt=parts[k3];
+pt.vx*=Math.pow(.965,f);pt.vy*=Math.pow(.965,f);pt.vy+=.045*f;
+pt.x+=pt.vx*f;pt.y+=pt.vy*f;pt.l-=pt.d*f;
+if(pt.l<=0){parts.splice(k3,1);continue}
+ctx.globalAlpha=Math.min(1,pt.l*1.3);
+ctx.beginPath();ctx.arc(pt.x,pt.y,pt.r*(.5+pt.l*.5),0,6.2832);ctx.fill()}
+ctx.globalAlpha=1}
+requestAnimationFrame(frame)}
+requestAnimationFrame(frame)}
+
+function skip(){
+clr();
+st.querySelectorAll('.w,.lie,.truth').forEach(function(e){e.style.transition='none';e.classList.add('on')});
+st.querySelectorAll('.lie').forEach(function(e){e.classList.add('x')});
+done()}
+
+function go(){
+if(i===last)return;
+if(busy&&!st.classList.contains('out')){skip();return}
+if(busy)return;
+show(i+1)}
+
+document.body.addEventListener('click',go);
+document.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();go()}});
+show(0);
+</script>
+</body>
+</html>
